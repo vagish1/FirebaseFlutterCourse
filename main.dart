@@ -1,16 +1,14 @@
-import 'dart:io';
-
 import 'package:example/screen/sign_in.dart';
 import 'package:example/screens.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isAndroid || Platform.isIOS) {
+  if (!kIsWeb) {
     await Firebase.initializeApp();
   } else {
     const firebaseConfig = {

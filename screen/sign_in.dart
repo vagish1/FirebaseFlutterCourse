@@ -177,7 +177,25 @@ class _SingInState extends State<SingIn> {
                     height: 24.0,
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (ctz) {
+                            return FutureBuilder<User>(
+                              builder: (ctx, snapshot) {
+                                if (snapshot.hasData) {
+                                  return Success();
+                                }
+                                if (snapshot.hasError) {
+                                  return ErrorOccured(snapshot: snapshot);
+                                }
+                                return InProgress();
+                              },
+                              future: FirebaseAuthentication.instance
+                                  .signUpWithGoogle(),
+                            );
+                          });
+                    },
                     child: Container(
                       width: double.infinity,
                       height: 50,

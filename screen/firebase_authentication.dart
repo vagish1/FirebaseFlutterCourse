@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class FirebaseAuthentication {
   FirebaseAuthentication.init();
@@ -27,6 +28,51 @@ class FirebaseAuthentication {
       return Future.value(userCredential.user);
     } on FirebaseAuthException catch (e) {
       return Future.error(e.message!);
+    }
+  }
+
+  Future<User> signUpWithGoogle() async {
+    final FirebaseAuth _ins = initializeAuth();
+
+    try {
+      if (kIsWeb) {
+        final GoogleAuthProvider webAuthProvider = GoogleAuthProvider();
+
+        final UserCredential credential =
+            await _ins.signInWithPopup(webAuthProvider);
+        if (credential.user == null) {
+          return Future.error(
+              "User seem to be not valid or appears to be a null");
+        }
+
+        return Future.value(credential.user);
+      }
+
+      //Mobile Platform
+
+      final GoogleSignIn _googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
+      if (account == null) {
+        return Future.error("USer dismissed the prompt to select account");
+      }
+      final GoogleSignInAuthentication authentication =
+          await account.authentication;
+
+      final AuthCredential authCredential = GoogleAuthProvider.credential(
+        idToken: authentication.idToken,
+        accessToken: authentication.accessToken,
+      );
+
+      final UserCredential credential =
+          await _ins.signInWithCredential(authCredential);
+      if (credential.user == null) {
+        return Future.error(
+            "User seem to be not valid or appears to be a null");
+      }
+
+      return Future.value(credential.user);
+    } on Exception catch (e) {
+      return Future.error(e.toString());
     }
   }
 }
