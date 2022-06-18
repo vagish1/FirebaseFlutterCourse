@@ -1,5 +1,7 @@
+import 'package:example/screen/home_screen.dart';
 import 'package:example/screen/sign_in.dart';
 import 'package:example/screens.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
@@ -61,7 +63,25 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-      home: const SingIn(),
+      home: StreamBuilder<User?>(
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return HomeScreen();
+          }
+
+          if (snapshot.hasError) {
+            return Scaffold(
+              body: Center(
+                child: Text(
+                  snapshot.error.toString(),
+                ),
+              ),
+            );
+          }
+          return SingIn();
+        },
+        stream: FirebaseAuth.instance.authStateChanges(),
+      ),
     );
   }
 }
