@@ -75,4 +75,43 @@ class FirebaseAuthentication {
       return Future.error(e.toString());
     }
   }
+
+  Future<Map<String, dynamic>> sendOtpToThePhoneNumber(
+      String phoneNumber) async {
+    final FirebaseAuth _ins = initializeAuth();
+    bool sendOtpResponse = false;
+    final Map<String, dynamic> responseMap = {};
+    final ConfirmationResult result = await _ins.signInWithPhoneNumber(
+        phoneNumber,
+        RecaptchaVerifier(onError: (authException) {
+          sendOtpResponse = false;
+          responseMap.addAll({
+            "message": authException.message,
+            "title": "Unexpected error happend",
+          });
+        }, onSuccess: () {
+          sendOtpResponse = true;
+        }));
+
+    if (!sendOtpResponse) {
+      return Future.error(responseMap);
+    }
+
+    responseMap.addAll({
+      "result": result,
+    });
+    return Future.value(responseMap);
+  }
+
+  Future<User> verifyOtp(ConfirmationResult result, String otp) async {
+    try {
+      final UserCredential credential = await result.confirm(otp);
+      if (credential.user == null) {
+        return Future.error("User is not created insde console");
+      }
+      return Future.value(credential.user);
+    } on FirebaseAuthException catch (e) {
+      return Future.error(e.message!);
+    }
+  }
 }
